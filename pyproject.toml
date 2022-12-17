@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "rldev2022"
+version = "0.1.0"
+description = ""
+authors = ["Syntrice <syntrice@protonmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+tcod = "^14.0.0"
+numpy = "^1.23.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
