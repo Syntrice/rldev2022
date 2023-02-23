@@ -1,42 +1,50 @@
 import tcod
+from engine import Engine
+from entity import Entity
+from world.game_map import GameMap
+from input_handlers import EventHandler
+from world.procgen import generate_dungeon
 
-# main method (entrypoint)
-# the arrow is metadata which indicates return type
-def main() -> None: 
+def main() -> None:
     
-    # define window title
-    title = "rldev2022"
+    # Window Dimensions
+    screen_width = 80
+    screen_height = 50
     
-    # define window dimensions
-    screen_width, screen_height = 80, 50
+    map_width = 80
+    map_height = 45
     
-    # load tileset
+    # Load Tileset
     tileset = tcod.tileset.load_tilesheet("rldev2022/assets/dejavu10x10_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD)
+
+    # Event Handler
+    event_handler = EventHandler()
     
-    # setup new window, and use its context
-    with tcod.context.new_terminal(screen_width,screen_height,tileset=tileset,title=title,vsync=True,) as context:
-        
-        # create and setup a console
+    # create entities and default properties
+    player = Entity(int(screen_width/2), int(screen_height/2), "@", (255,255,255))
+    npc = Entity(int(screen_width/2 - 5), int(screen_height/2), "@", (255,255,0))
+    
+    entities = {npc, player}
+    
+    # create game map
+    game_map = generate_dungeon(map_width, map_height)
+    
+    # create engine
+    engine = Engine(entities=entities, event_handler=event_handler, game_map=game_map, player=player) 
+    
+    with tcod.context.new_terminal(
+        screen_width, 
+        screen_height, 
+        tileset=tileset, 
+        title="rldev2022", 
+        vsync=True
+    ) as context:
         # order F allows numpy to access 2D arrays in [x,y] order as apposed to [y,x]
-        root_console = tcod.Console(screen_width,screen_height, order="F")
-        
-        # game loop (basically the 'engine' of the game)
+        root_console = tcod.Console(screen_width, screen_height, order="F") 
         while True:
-            
-            # print to console
-            root_console.print(x=1,y=1, string="@")
-            
-            # update the screen
-            context.present(root_console)
-            
-            # wait for input, then loop through each event that happend
-            for event in tcod.event.wait():
-                
-                # determine if exit event occurred
-                if event.type == "QUIT":
-                    raise SystemExit()   
-                
-# only executed if the script is explicitily run
+            engine.render(console=root_console, context=context)
+            events = tcod.event.wait() # parse events
+            engine.handle_events(events)
+
 if __name__ == "__main__":
     main()
-    
